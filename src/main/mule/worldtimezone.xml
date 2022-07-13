@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1fb92276-b91f-4cfa-87a6-37863860133f">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="a1f4de11-dc13-4752-bdda-7a8a6510c195" basePath="/api/timezone" >
+		<http:request-connection host="worldtimeapi.org" />
+	</http:request-config>
+	<flow name="worldtimezoneFlow" doc:id="27356027-0731-466a-a853-6641f8c11c1e" >
+		<http:listener doc:name="request-to-worldTimeZone" doc:id="e5884b00-b712-4f71-9c77-931fc3818d06" config-ref="HTTP_Listener_config" path="/{region}/{city}"/>
+		<http:request method="GET" doc:name="Request" doc:id="f0b06142-a98b-4acd-a9f6-6a82241fa1f3" config-ref="HTTP_Request_configuration" path="/{region}/{city}">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+
+    region : attributes.uriParams.region,
+	city : attributes.uriParams.city
+	
+}]]]></http:uri-params>
+		</http:request>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="00933385-0fee-4fac-90ac-fdc5c227b966" />
+		<ee:transform doc:name="Transform Message" doc:id="b352bb0b-fdc5-44d4-ba9a-9937be6b1b2f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
